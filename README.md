@@ -76,7 +76,7 @@ git clone https://github.com/OmarHeshamShehab/CUDA-TensorFlow-WSL-Setup.git
 ### 2. ✍️ Create the Installation Script
 
 ```bash
-nano setup_tf220.sh
+nano setup_tf221.sh
 ```
 
 - Paste the contents of `script.txt` into the terminal (select all, copy, then paste)  
@@ -86,13 +86,13 @@ nano setup_tf220.sh
 ### 3. ✅ Make the Script Executable
 
 ```bash
-chmod +x setup_tf220.sh
+chmod +x setup_tf221.sh
 ```
 
 ### 4. 🚫 Run the Script as a Normal User
 
 ```bash
-./setup_tf220.sh
+./setup_tf221.sh
 ```
 
 > ⚠️ **Do not use `sudo`** — the script calls `sudo` only when required.
