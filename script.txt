@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🚀 TensorFlow 2.20 GPU Installer (Universal for Ubuntu 20.04, 22.04, 24.04)
+# 🚀 TensorFlow 2.21 GPU Installer (Universal for Ubuntu 20.04, 22.04, 24.04)
 
 set -e
 
@@ -115,19 +115,19 @@ conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 conda update -n base -c defaults conda -y
 
 # 🐍 Create Conda env
-echo "🐍 Creating Conda environment '.tf220' with Python 3.11..."
-conda create -n .tf220 python=3.11 -y
+echo "🐍 Creating Conda environment '.tf221' with Python 3.11..."
+conda create -n .tf221 python=3.11 -y
 
 # ✅ Activate safely
-echo "✅ Activating .tf220 environment..."
+echo "✅ Activating .tf221 environment..."
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate .tf220
+conda activate .tf221
 
 # 📦 Install C++ stdlib fix
 conda install -c conda-forge libstdcxx-ng -y
 
-# 📦 Install TensorFlow 2.20 GPU
-pip install "tensorflow[and-cuda]==2.20.*"
+# 📦 Install TensorFlow 2.21 GPU
+pip install "tensorflow[and-cuda]==2.21.*"
 
 # 📦 Install pycuda + TensorRT
 pip install pycuda nvidia-pyindex tensorrt
@@ -156,7 +156,7 @@ sudo apt clean
 
 # ✅ Done
 echo ""
-echo "🎉 Full TensorFlow 2.20 GPU setup complete!"
-echo "👉 To activate later: conda activate .tf220"
+echo "🎉 Full TensorFlow 2.21 GPU setup complete!"
+echo "👉 To activate later: conda activate .tf221"
 echo "🧪 To test GPU in Python:"
 echo 'python -c "import tensorflow as tf; print(tf.config.list_physical_devices(\"GPU\"))"'

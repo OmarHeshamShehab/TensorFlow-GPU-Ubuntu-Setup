@@ -1,4 +1,4 @@
-# 🚀 CUDA TensorFlow 2.20 Setup (Ubuntu / WSL2)
+# 🚀 CUDA TensorFlow 2.21 Setup (Ubuntu / WSL2)
 
 > **GitHub Repo:** [CUDA-TensorFlow-WSL-Setup](https://github.com/OmarHeshamShehab/CUDA-TensorFlow-WSL-Setup)  
 > Maintained by: [@OmarHeshamShehab](https://github.com/OmarHeshamShehab)
@@ -25,7 +25,7 @@
 This repository provides a complete **automated installation script** for setting up a **GPU-accelerated Python environment** using:
 - ✅ CUDA 12.5
 - ✅ cuDNN 9.3.0
-- ✅ TensorFlow **2.20** with GPU support
+- ✅ TensorFlow **2.21** with GPU support
 - ✅ TensorRT & PyCUDA
 - ✅ Miniconda on Ubuntu (20.04 / 22.04 / 24.04, WSL2 & bare-metal)
 
@@ -56,7 +56,7 @@ It includes a **Jupyter Notebook** to verify GPU availability inside TensorFlow.
 5. Installs **Miniconda**, initializes Conda, and disables auto base activation  
 6. Creates a dedicated Conda environment named `.tf220` with **Python 3.11**  
 7. Installs into the `.tf220` environment:
-   - **TensorFlow 2.20 with GPU support**
+   - **TensorFlow 2.21 with GPU support**
    - **PyCUDA**
    - **TensorRT**
    - `libstdcxx-ng` (to fix `GLIBCXX_3.4.32` compatibility for PyCUDA)  
@@ -103,7 +103,7 @@ chmod +x setup_tf220.sh
 
 | Name     | Python Version | Packages Installed                   |
 |----------|----------------|--------------------------------------|
-| `.tf220` | 3.11           | TensorFlow 2.20 (GPU), PyCUDA, TensorRT, libstdcxx-ng |
+| `.tf220` | 3.11           | TensorFlow 2.21 (GPU), PyCUDA, TensorRT, libstdcxx-ng |
 
 To activate later:
 
@@ -138,12 +138,12 @@ The notebook will output the number of GPUs detected by TensorFlow.
 
 ## 📁 Customizing TensorFlow Version
 
-This setup script defaults to installing **TensorFlow 2.20**.
+This setup script defaults to installing **TensorFlow 2.21**.
 
 However, **you can install any TensorFlow version `>= 2.11`** by editing this line in the script:
 
 ```bash
-pip install "tensorflow[and-cuda]==2.20.*"
+pip install "tensorflow[and-cuda]==2.21.*"
 ```
 
 For a different version (example: 2.19):
