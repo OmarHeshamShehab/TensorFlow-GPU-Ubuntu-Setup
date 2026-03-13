@@ -1,189 +1,296 @@
-# 🚀 CUDA TensorFlow 2.21 Setup (Ubuntu / WSL2)
 
-> **GitHub Repo:** [CUDA-TensorFlow-WSL-Setup](https://github.com/OmarHeshamShehab/CUDA-TensorFlow-WSL-Setup)  
-> Maintained by: [@OmarHeshamShehab](https://github.com/OmarHeshamShehab)
+# TensorFlow GPU Setup for WSL2 (Windows 11)
 
----
+Automated environment setup for running **TensorFlow with GPU acceleration inside WSL2** using **Miniconda**.
 
-## 📚 Table of Contents
+This project provides:
 
-- [📦 Overview](#-overview)
-- [🛠️ Prerequisites](#️-prerequisites)
-- [📜 What the Script Does](#-what-the-script-does)
-- [🔧 Installation Steps](#-installation-steps)
-- [📂 Conda Environment Details](#-conda-environment-details)
-- [🧪 GPU Test Notebook](#-gpu-test-notebook)
-- [📁 Customizing TensorFlow Version](#-customizing-tensorflow-version)
-- [🧹 Clean-Up & Reuse](#-clean-up--reuse)
-- [❗ Troubleshooting](#-troubleshooting)
-- [👨‍💻 Author](#-author)
+- A **single installation script** (`script.txt`) that creates a reproducible Python environment
+- GPU‑enabled **TensorFlow 2.21**
+- Optional GPU libraries such as **PyCUDA** and **TensorRT**
+- A **verification notebook** to confirm GPU availability
+
+This setup is designed for **Windows 11 + WSL2 + NVIDIA GPU** workflows and works well with **VS Code Remote WSL**.
 
 ---
 
-## 📦 Overview
+# Overview
 
-This repository provides a complete **automated installation script** for setting up a **GPU-accelerated Python environment** using:
-- ✅ CUDA 12.5
-- ✅ cuDNN 9.3.0
-- ✅ TensorFlow **2.21** with GPU support
-- ✅ TensorRT & PyCUDA
-- ✅ Miniconda on Ubuntu (20.04 / 22.04 / 24.04, WSL2 & bare-metal)
+The installation script performs the following actions:
 
-The script also **auto-detects your NVIDIA GPU and drivers**, ensuring the correct `nvidia-utils` package (`nvidia-smi`) is installed.  
-It includes a **Jupyter Notebook** to verify GPU availability inside TensorFlow.
+1. Updates the Ubuntu system packages
+2. Installs essential build tools
+3. Installs **Miniconda** locally in the user directory
+4. Initializes Conda for the Bash shell
+5. Creates a dedicated Conda environment
+6. Installs **TensorFlow 2.21 with built‑in CUDA support**
+7. Installs common ML and data science libraries
+8. Installs Jupyter kernel support
+9. Installs optional GPU compute libraries
+10. Runs a quick TensorFlow GPU detection test
 
----
-
-## 🛠️ Prerequisites
-
-- Ubuntu **20.04, 22.04, or 24.04** (WSL2 or native Linux)
-- A compatible **NVIDIA GPU**:
-  - Compute Capability **≥ 6.0** (Pascal or newer)
-  - Driver **≥ 550** (required for CUDA 12.5)
-- Do **NOT** run the script as `root` or with `sudo`
-- Internet connection for package downloads
+Important:  
+CUDA and cuDNN are **automatically handled by TensorFlow's `and-cuda` build**, so no manual CUDA installation is required.
 
 ---
 
-## 📜 What the Script Does
+# Repository Structure
 
-1. Checks that you're not root  
-2. Updates the system and installs essential build tools  
-3. Installs:
-   - **CUDA 12.5**
-   - **cuDNN 9.3.0** (auto-selected for your Ubuntu version)  
-4. Adds CUDA environment variables to your `.bashrc` and current session  
-5. Installs **Miniconda**, initializes Conda, and disables auto base activation  
-6. Creates a dedicated Conda environment named `.tf220` with **Python 3.11**  
-7. Installs into the `.tf220` environment:
-   - **TensorFlow 2.21 with GPU support**
-   - **PyCUDA**
-   - **TensorRT**
-   - `libstdcxx-ng` (to fix `GLIBCXX_3.4.32` compatibility for PyCUDA)  
-8. Detects your NVIDIA GPU and installs the **matching `nvidia-utils` package** (`nvidia-smi`)  
-9. Cleans up installer files and APT package cache to save space  
+```
+.
+├── script.txt
+├── verify_tensorflow_gpu.ipynb
+└── README.md
+```
+
+| File | Description |
+|-----|-------------|
+| `script.txt` | Automated installation script |
+| `verify_tensorflow_gpu.ipynb` | Notebook for GPU verification |
+| `README.md` | Documentation |
 
 ---
 
-## 🔧 Installation Steps
+# Requirements
 
-### 1. 📥 Clone the Repository
+## Operating System
 
-```bash
+- Windows 11
+- WSL2 enabled
+- Ubuntu 20.04 / 22.04 / 24.04
+
+## Hardware
+
+- NVIDIA GPU compatible with CUDA
+- Recent NVIDIA driver installed on Windows
+
+Install the Windows driver from:
+
+https://www.nvidia.com/download/index.aspx
+
+WSL automatically exposes the GPU to Linux.
+
+---
+
+# Verify GPU in WSL
+
+Inside WSL run:
+
+```
+nvidia-smi
+```
+
+You should see your GPU information.
+
+If this command fails, fix the Windows driver before continuing.
+
+---
+
+# Installation
+
+## 1. Clone the repository
+
+```
 git clone https://github.com/OmarHeshamShehab/CUDA-TensorFlow-WSL-Setup.git
+cd CUDA-TensorFlow-WSL-Setup
 ```
 
-### 2. ✍️ Create the Installation Script
+## 2. Make the script executable
 
-```bash
-nano setup_tf221.sh
+```
+chmod +x script.txt
 ```
 
-- Paste the contents of `script.txt` into the terminal (select all, copy, then paste)  
-- Save the file with: `Ctrl + O`, then `Enter`  
-- Exit the editor with: `Ctrl + X`  
+## 3. Run the installer
 
-### 3. ✅ Make the Script Executable
+Run as a **normal user**:
 
-```bash
-chmod +x setup_tf221.sh
+```
+./script.txt
 ```
 
-### 4. 🚫 Run the Script as a Normal User
+Do **NOT** run with `sudo`.
 
-```bash
-./setup_tf221.sh
-```
-
-> ⚠️ **Do not use `sudo`** — the script calls `sudo` only when required.
+The script will ask for your password only when installing system packages.
 
 ---
 
-## 📂 Conda Environment Details
+# What the Script Installs
 
-| Name     | Python Version | Packages Installed                   |
-|----------|----------------|--------------------------------------|
-| `.tf220` | 3.11           | TensorFlow 2.21 (GPU), PyCUDA, TensorRT, libstdcxx-ng |
+## System Packages
 
-To activate later:
+```
+build-essential
+wget
+curl
+git
+python3-dev
+```
 
-```bash
-conda activate .tf220
+## Python Environment
+
+A Conda environment named:
+
+```
+.tf221
+```
+
+with
+
+```
+Python 3.11
+```
+
+## Python Libraries
+
+Core packages:
+
+```
+tensorflow[and-cuda]==2.21.*
+numpy
+pandas
+matplotlib
+seaborn
+ipykernel
+```
+
+Optional GPU tools:
+
+```
+pycuda
+tensorrt
 ```
 
 ---
 
-## 🧪 GPU Test Notebook
+# Activate the Environment
 
-Once installation is complete, you can verify the setup using the included notebook:
+After installation:
 
-**➡️ File:** `verify_tensorflow_gpu.ipynb`
+```
+conda activate .tf221
+```
 
-### Run with Jupyter:
+---
 
-```bash
-conda activate .tf220
+# Verify TensorFlow GPU
+
+Inside the environment run:
+
+```python
+import tensorflow as tf
+
+print("TensorFlow:", tf.__version__)
+print("GPUs:", tf.config.list_physical_devices('GPU'))
+```
+
+If configured correctly you should see something like:
+
+```
+GPUs: [PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')]
+```
+
+---
+
+# Using the Verification Notebook
+
+Activate the environment:
+
+```
+conda activate .tf221
+```
+
+Run Jupyter:
+
+```
 jupyter notebook verify_tensorflow_gpu.ipynb
 ```
 
-### Or from terminal:
+This notebook runs several TensorFlow GPU checks.
 
-```bash
-python verify_tensorflow_gpu.ipynb
+---
+
+# Using with VS Code
+
+1. Install the **VS Code Remote - WSL extension**
+2. Open the project folder in WSL
+3. Select Python interpreter:
+
+```
+~/.miniconda/envs/.tf221/bin/python
 ```
 
-The notebook will output the number of GPUs detected by TensorFlow.
+4. Run notebooks or Python scripts with GPU acceleration.
 
 ---
 
-## 📁 Customizing TensorFlow Version
+# Reinstall or Remove the Environment
 
-This setup script defaults to installing **TensorFlow 2.21**.
+Remove the environment:
 
-However, **you can install any TensorFlow version `>= 2.11`** by editing this line in the script:
-
-```bash
-pip install "tensorflow[and-cuda]==2.21.*"
+```
+conda remove -n .tf221 --all
 ```
 
-For a different version (example: 2.19):
+Recreate by running the script again.
 
-```bash
-pip install "tensorflow[and-cuda]==2.19.*"
+---
+
+# Troubleshooting
+
+## TensorFlow does not detect GPU
+
+Check:
+
+```
+nvidia-smi
 ```
 
-> ⚠️ When changing TensorFlow versions, you may also need to update the **CUDA and cuDNN versions** accordingly.
+Then inside Python:
 
-Refer to the official TensorFlow compatibility matrix for supported versions of CUDA, cuDNN, and Python:  
-🔗 [TensorFlow GPU Build Requirements](https://www.tensorflow.org/install/source#gpu)
-
----
-
-## 🧹 Clean-Up & Reuse
-
-- All temporary `.deb` and installer files are deleted automatically after installation  
-- APT cache is cleaned at the end to free up space  
-- CUDA and Conda environment variables are saved in `.bashrc`  
+```
+import tensorflow as tf
+tf.config.list_physical_devices("GPU")
+```
 
 ---
 
-## ❗ Troubleshooting
+## Conda command not found
 
-- **CUDA tools not found?** Run `source ~/.bashrc` to reload your environment  
-- **nvidia-smi not found?** The script attempts auto-detection, but you can also install manually:
-  ```bash
-  sudo apt install -y nvidia-utils-<driver-version>
-  ```
-- **GPU not detected in TF?** Double-check:
-  - You’re in the `.tf220` environment
-  - You installed correct NVIDIA drivers (≥ 550)
-  - Your GPU is **Pascal or newer (Compute Capability ≥ 6.0)**  
+Reload the shell:
+
+```
+source ~/.bashrc
+```
 
 ---
 
-## 👨‍💻 Author
+## pip install errors
 
-**Omar Hesham Shehab**  
-GitHub: [@OmarHeshamShehab](https://github.com/OmarHeshamShehab)
+Upgrade pip:
+
+```
+pip install --upgrade pip
+```
 
 ---
+
+# Notes
+
+This setup uses **TensorFlow's integrated CUDA runtime**.
+
+Advantages:
+
+- No manual CUDA installation
+- No cuDNN configuration
+- Easier upgrades
+
+---
+
+# Author
+
+Omar Hesham Shehab
+
+GitHub:
+
+https://github.com/OmarHeshamShehab
