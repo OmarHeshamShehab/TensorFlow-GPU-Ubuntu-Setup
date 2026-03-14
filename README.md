@@ -102,7 +102,7 @@ The installer handles everything automatically:
 ## 📁 Repository Structure
 
 ```
-TensorFlow-GPU-WSL2-Setup/
+TensorFlow-GPU-WSL2/
 │
 ├── install_tf221_gpu.sh          # Main installer script
 ├── verify_tensorflow_gpu.ipynb   # GPU verification notebook
@@ -134,13 +134,30 @@ wsl --update
 ### Step 2 — Clone the repository
 
 ```bash
-git clone https://github.com/OmarHeshamShehab/TensorFlow-GPU-Ubuntu-Setup.git
-cd TensorFlow-GPU-Ubuntu-Setup
+git clone https://github.com/OmarHeshamShehab/TensorFlow-GPU-WSL2.git
+cd TensorFlow-GPU-WSL2
 ```
 
 ---
 
-### Step 3 — Make the script executable
+### Step 3 — Create the installer script using nano
+
+Open a new file with nano:
+
+```bash
+nano install_tf221_gpu.sh
+```
+
+Copy the full contents of `script.txt` from the repository and paste it inside nano, then save and exit:
+
+```
+Ctrl+O → Enter to save
+Ctrl+X to exit
+```
+
+---
+
+### Step 4 — Make the script executable
 
 ```bash
 chmod +x install_tf221_gpu.sh
@@ -148,13 +165,13 @@ chmod +x install_tf221_gpu.sh
 
 ---
 
-### Step 4 — Run the installer
+### Step 5 — Run the installer
 
 ```bash
 ./install_tf221_gpu.sh
 ```
 
-The script will run through 6 sections automatically:
+The script will run through 7 sections automatically:
 
 | Section | What Happens |
 |---|---|
@@ -167,7 +184,7 @@ The script will run through 6 sections automatically:
 
 ---
 
-### Step 5 — Reopen your terminal
+### Step 6 — Reopen your terminal
 
 After the script finishes, close and reopen your WSL2 terminal so conda initializes properly:
 
@@ -189,7 +206,7 @@ Expected output:
 ### Step 1 — Open the project in VS Code
 
 ```bash
-cd TensorFlow-GPU-WSL2-Setup
+cd TensorFlow-GPU-WSL2
 code .
 ```
 
