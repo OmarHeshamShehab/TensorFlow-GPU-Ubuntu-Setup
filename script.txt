@@ -1,64 +1,157 @@
 #!/bin/bash
 # TensorFlow 2.21 GPU Installer for WSL2 + VS Code
+# Tested on: Ubuntu (WSL2), NVIDIA GPU, VS Code with Jupyter extension
+# Prerequisites: NVIDIA driver must be installed on Windows before running this script
+# CUDA and cuDNN are installed automatically inside the conda environment via pip
 
 set -e
 
+# ─────────────────────────────────────────────
+# 1. Safety Checks
+# ─────────────────────────────────────────────
+
 if [ "$EUID" -eq 0 ]; then
-  echo "Do NOT run as root"
+  echo "❌ Do NOT run as root. Run as your normal user."
   exit 1
 fi
 
-echo "Updating system..."
+echo "🔍 Checking NVIDIA GPU visibility in WSL2..."
+if ! command -v nvidia-smi &>/dev/null || ! nvidia-smi &>/dev/null; then
+  echo ""
+  echo "❌ nvidia-smi not found or GPU not accessible."
+  echo "   Make sure:"
+  echo "   1. NVIDIA driver is installed on Windows (not inside WSL2)"
+  echo "   2. WSL2 is up to date: run 'wsl --update' from Windows PowerShell"
+  echo "   3. Restart WSL2 after driver install"
+  exit 1
+fi
+
+echo "✅ GPU detected:"
+nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
+echo ""
+
+# ─────────────────────────────────────────────
+# 2. System Dependencies
+# ─────────────────────────────────────────────
+
+echo "📦 Updating system..."
 sudo apt update
+sudo apt upgrade -y
+sudo apt autoremove --purge -y
 sudo apt install -y build-essential wget curl git python3-dev
 
-# Install Miniconda if missing
+# ─────────────────────────────────────────────
+# 3. Miniconda Install
+# ─────────────────────────────────────────────
+
 if [ ! -d "$HOME/miniconda" ]; then
-  wget -O miniconda.sh \
-  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-  bash miniconda.sh -b -p $HOME/miniconda
+  echo "📥 Downloading and installing Miniconda..."
+  wget -q -O miniconda.sh \
+    https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  bash miniconda.sh -b -p "$HOME/miniconda"
+  rm miniconda.sh
+else
+  echo "✅ Miniconda already installed, skipping."
 fi
 
 export PATH="$HOME/miniconda/bin:$PATH"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
 
+# Initialize conda for future terminal sessions
 conda init bash
+
+# Accept Anaconda Terms of Service for default channels
+echo "📋 Accepting Anaconda Terms of Service..."
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+
 conda config --set auto_activate_base false
 conda update -n base -c defaults conda -y
+conda clean --all -y
 
-# Create environment if missing
-if conda env list | grep -q ".tf221"; then
-  echo "Environment exists"
+# ─────────────────────────────────────────────
+# 4. Conda Environment
+# ─────────────────────────────────────────────
+
+ENV_NAME="tf221"
+
+if conda env list | grep -q "^${ENV_NAME}"; then
+  echo "✅ Conda environment '${ENV_NAME}' already exists, skipping creation."
 else
-  conda create -n .tf221 python=3.11 -y
+  echo "🐍 Creating conda environment '${ENV_NAME}' with Python 3.11..."
+  conda create -n "${ENV_NAME}" python=3.11 -y
 fi
 
-conda activate .tf221
+conda activate "${ENV_NAME}"
 
+if [[ "$CONDA_DEFAULT_ENV" != "${ENV_NAME}" ]]; then
+  echo ""
+  echo "❌ Failed to activate conda environment '${ENV_NAME}'."
+  echo "   Try running manually: conda activate ${ENV_NAME}"
+  exit 1
+fi
+
+echo "✅ Activated environment: $CONDA_DEFAULT_ENV"
+
+# ─────────────────────────────────────────────
+# 5. Python Packages
+# ─────────────────────────────────────────────
+
+echo ""
+echo "📦 Upgrading pip..."
 pip install --upgrade pip
 
-# TensorFlow GPU
+echo "📦 Installing TensorFlow 2.21 with CUDA and cuDNN bundled..."
 pip install "tensorflow[and-cuda]==2.21.*"
 
-# ML libraries
+echo "📦 Installing core ML libraries..."
 pip install numpy pandas matplotlib seaborn
 
-# VS Code kernel support
+echo "📦 Installing VS Code / Jupyter kernel support..."
 pip install ipykernel
 
-# Optional GPU tools
-pip install pycuda tensorrt
+python -m ipykernel install --user --name "${ENV_NAME}" --display-name "Python (${ENV_NAME})"
+
+# ─────────────────────────────────────────────
+# 6. CUDA Library Path Fix for VS Code
+# ─────────────────────────────────────────────
 
 echo ""
-echo "Testing GPU..."
-
-python - <<EOF
-import tensorflow as tf
-print("TensorFlow:", tf.__version__)
-print("GPUs:", tf.config.list_physical_devices('GPU'))
+echo "🔧 Configuring CUDA library path for VS Code and Jupyter..."
+mkdir -p "$CONDA_PREFIX/etc/conda/activate.d"
+cat > "$CONDA_PREFIX/etc/conda/activate.d/env_vars.sh" << 'EOF'
+export LD_LIBRARY_PATH=\
+$CONDA_PREFIX/lib/python3.11/site-packages/nvidia/nvjitlink/lib:\
+$CONDA_PREFIX/lib/python3.11/site-packages/nvidia/cusparse/lib:\
+$CONDA_PREFIX/lib/python3.11/site-packages/nvidia/cusolver/lib:\
+$CONDA_PREFIX/lib/python3.11/site-packages/nvidia/cufft/lib:\
+$CONDA_PREFIX/lib/python3.11/site-packages/nvidia/nccl/lib:\
+$CONDA_PREFIX/lib/python3.11/site-packages/nvidia/curand/lib:\
+$CONDA_PREFIX/lib/python3.11/site-packages/nvidia/cuda_runtime/lib:\
+$CONDA_PREFIX/lib/python3.11/site-packages/nvidia/cublas/lib:\
+$CONDA_PREFIX/lib/python3.11/site-packages/nvidia/cuda_cupti/lib:\
+$CONDA_PREFIX/lib/python3.11/site-packages/nvidia/cudnn/lib:\
+$CONDA_PREFIX/lib/python3.11/site-packages/nvidia/cuda_nvcc/nvvm/lib64:\
+$LD_LIBRARY_PATH
 EOF
+echo "✅ CUDA library path configured."
+
+# ─────────────────────────────────────────────
+# 7. Done
+# ─────────────────────────────────────────────
 
 echo ""
-echo "Done!"
-echo "Activate later with:"
-echo "conda activate .tf221"
+echo "✅ Installation complete!"
+echo ""
+echo "⚠️  Important: Close and reopen your terminal once"
+echo "   so that conda is fully initialized in your session."
+echo ""
+echo "To activate this environment later:"
+echo "   conda activate ${ENV_NAME}"
+echo ""
+echo "In VS Code:"
+echo "   1. Open your .ipynb file"
+echo "   2. Click the kernel picker (top right)"
+echo "   3. Select: Python (${ENV_NAME})"
+echo ""
+echo "When ready, run the GPU verification notebook in VS Code."
